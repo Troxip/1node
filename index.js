@@ -26,15 +26,32 @@ const url = require("url");
 ////////////////////////////////////
 // Server
 
-const data = fs.readFileSync(`${__dirname}/dev-data/data.json`);
-const productData = JSON.parse(data);
+const replaceTemplate = (temp, product) => {
+  let output = temp.replace(/{%PRODUCTNAME%}/g, product.productName);
+  output = output.replace(/{%IMAGE%}/g, product.image);
+};
+
+const tempOverview = fs.readFileSync(
+  `${__dirname}/templates/template-overview.html`
+);
+const tempCard = fs.readFileSync(`${__dirname}/templates/template-card.html`);
+const tempProduct = fs.readFileSync(
+  `${__dirname}/templates/template-product.html`
+);
+
+const data = fs.readFileSync(`${__dirname}/dev-data/data.json`, "utf-8");
+const dataObj = JSON.parse(data);
 
 const server = http.createServer((req, res) => {
   const pathName = req.url;
 
   //Overview Page
   if (pathName === "/" || pathName === "/overview") {
-    res.end("This is the overview");
+    res.writeHead(200, { "Content-Type": "text/html" });
+
+    const cardsHtml = dataObj.map((el) => replaceTemplate(tempCard, el));
+
+    res.end(tempOverview);
 
     //Product Page
   } else if (pathName === "/product") {
